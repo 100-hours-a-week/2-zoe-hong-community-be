@@ -9,13 +9,16 @@ import lombok.Setter;
 @Entity
 @Table(name="LIKED")
 public class Liked {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EmbeddedId
+    private LikedId id;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("user")
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("post")
     @JoinColumn(name = "post_id", nullable = false)
     private Posts post;
 }
