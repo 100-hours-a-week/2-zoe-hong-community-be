@@ -15,12 +15,12 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Entity
-@Table(name="USERS")
+@Table(name="users")
 @EntityListeners(AuditingEntityListener.class) // JPA Auditing 기능 -> createdAt 자동 관리
 @SQLDelete(sql="UPDATE USERS SET deleted_at = NOW() WHERE id = ?") // Soft Delete
 @FilterDef(name = "deletedUserFilter", parameters = @ParamDef(name = "isDeleted", type = Timestamp.class))
 @Filter(name = "deletedUserFilter", condition = "deleted_at IS NULL") // Soft Delete 필터 적용
-public class Users {
+public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
