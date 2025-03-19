@@ -7,18 +7,18 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name="LIKED")
+@Table(name="liked")
 public class Liked {
     @EmbeddedId
     private LikedId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("user")
-    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false, updatable = false)
-    private Users user;
+    @MapsId("userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, updatable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("post")
-    @JoinColumn(name = "post_id", referencedColumnName = "userId", nullable = false, updatable = false)
-    private Posts post;
+    @MapsId("postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "id", nullable = false, updatable = false)
+    private Post post;
 }

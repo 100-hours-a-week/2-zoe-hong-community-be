@@ -12,30 +12,25 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Entity
-@Table(name = "POSTS")
+@Table(name="comments")
 @EntityListeners(AuditingEntityListener.class) // JPA Auditing 기능 -> createdAt, updatedAt 자동 관리
-public class Posts {
+public class Comment {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", updatable = false, nullable = false)
-    private Users user;
+    private User user;
 
-    @Column(nullable = false)
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", referencedColumnName = "id", updatable = false, nullable = false)
+    private Post post;
 
     @Column(nullable = false)
     private String content;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
-    @Column(name = "view_count", nullable = false)
-    private Long viewCount;
-
     @CreatedDate
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private Timestamp createdAt;
 
     @LastModifiedDate
