@@ -9,6 +9,6 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class LikedId implements Serializable {
     // 복합 키를 PK로 사용하기 위해 직렬화
-    private Long user;
-    private Long post;
+    private Long userId;
+    private Long postId;
 }

@@ -14,11 +14,11 @@ public class Liked {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("user")
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false, updatable = false)
     private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("post")
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "post_id", referencedColumnName = "userId", nullable = false, updatable = false)
     private Posts post;
 }
