@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 public class PostCardDTO {
     private Long id;
     private String title;
-    private String content;
     private UserDTO createdBy;
     private Timestamp createdAt;
     private Long likeCount;

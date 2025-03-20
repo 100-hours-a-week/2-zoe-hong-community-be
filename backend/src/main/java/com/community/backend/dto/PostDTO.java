@@ -13,7 +13,7 @@ public class PostDTO {
     private String imageUrl;
     private UserDTO user;
     private Timestamp createdAt;
-    private Long likesCount;
-    private Long viewsCount;
-    private Long commentsCount;
+    private Long likeCount;
+    private Long viewCount;
+    private Long commentCount;
 }
