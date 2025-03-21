@@ -9,6 +9,7 @@ import com.community.backend.dto.UserDTO;
 import com.community.backend.repository.CommentRepository;
 import com.community.backend.repository.LikedRepository;
 import com.community.backend.repository.PostRepository;
+import com.community.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final LikedRepository likedRepository;
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<PostCardDTO> getPostList() {
@@ -55,7 +57,7 @@ public class PostServiceImpl implements PostService {
     public PostDTO getPostById(Long id) {
         Post post = postRepository.findById(id).orElse(null);
 
-        User user = post.getUser();
+        User user = userRepository.findById(post.getUser().getId()).orElse(null);
         UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
         Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
@@ -92,5 +94,10 @@ public class PostServiceImpl implements PostService {
         }
 
         postRepository.delete(post);
+    }
+
+    @Override
+    public Boolean isLiked(Long userId, Long postId) {
+        return likedRepository.findByUserIdAndPostId(userId, postId).isPresent();
     }
 }
