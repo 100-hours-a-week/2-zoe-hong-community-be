@@ -10,9 +10,9 @@ public interface UserService {
     public void login(UserLoginRequest req);
 
     // 회원
-    public void join(UserJoinRequest req);
-    public void delete(Long id);
-    public UserDTO findById(Long id);
-    public void updateInfo(UserDTO dto);
-    public void updatePassword(PasswordRequest req);
+    void join(UserJoinRequest req);
+    void delete(Long id);
+    UserDTO findById(Long id);
+    void updateInfo(UserDTO dto);
+    void updatePassword(PasswordRequest req);
 }
