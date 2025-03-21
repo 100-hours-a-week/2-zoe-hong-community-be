@@ -55,9 +55,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDTO getPostById(Long id) {
-        Post post = postRepository.findById(id).orElse(null);
+        Post post = postRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
-        User user = userRepository.findById(post.getUser().getId()).orElse(null);
+        User user = userRepository.findById(post.getUser().getId()).orElseThrow(EntityNotFoundException::new);
         UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
         Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
