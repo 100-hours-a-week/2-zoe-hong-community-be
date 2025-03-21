@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface CommentService {
     List<CommentDTO> getCommentList(Long postId);
-    void save(CommentRequest req);
+    Long save(CommentRequest req);
     void delete(Long userId, Long commentId);
 }

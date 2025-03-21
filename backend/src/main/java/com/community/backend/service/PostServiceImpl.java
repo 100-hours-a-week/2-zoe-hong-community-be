@@ -76,12 +76,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void save(PostRequest req) {
+    public Long save(PostRequest req) {
         Post post = new Post();
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
         post.setImageUrl(req.getImageUrl());
         postRepository.save(post);
+
+        return post.getId();
     }
 
     @Override

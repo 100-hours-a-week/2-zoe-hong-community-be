@@ -9,7 +9,7 @@ import java.util.List;
 public interface PostService {
     List<PostCardDTO> getPostList();
     PostDTO getPostById(Long id);
-    void save(PostRequest req);
+    Long save(PostRequest req);
     void delete(Long userId, Long postId);
 
     // 좋아요

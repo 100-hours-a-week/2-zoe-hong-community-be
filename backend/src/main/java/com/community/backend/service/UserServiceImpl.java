@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     private final ImageValidator imageValidator;
 
     @Override
-    public void login(UserLoginRequest req) {
+    public Long login(UserLoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
 
@@ -34,10 +34,12 @@ public class UserServiceImpl implements UserService {
         if(!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+
+        return user.getId();
     }
 
     @Override
-    public void join(UserJoinRequest req) {
+    public Long join(UserJoinRequest req) {
         // 유효성 검사
         imageValidator.checkImage(req.getProfileImgUrl());
         emailValidator.checkEmail(req.getEmail());
@@ -50,8 +52,9 @@ public class UserServiceImpl implements UserService {
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setNickname(req.getNickname());
-
         userRepository.save(user);
+
+        return user.getId();
     }
 
     @Override
@@ -78,7 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateInfo(UserDTO dto) {
+    public Long updateInfo(UserDTO dto) {
         User user = userRepository.findById(dto.getId())
                 .orElseThrow(EntityNotFoundException::new);
 
@@ -90,10 +93,12 @@ public class UserServiceImpl implements UserService {
         user.setProfileImgUrl(dto.getProfileImgUrl());
         user.setNickname(dto.getNickname());
         userRepository.save(user);
+
+        return user.getId();
     }
 
     @Override
-    public void updatePassword(PasswordRequest req) {
+    public Long updatePassword(PasswordRequest req) {
         // 유효성 검사
         passwordValidator.checkPassword(req.getPassword());
 
@@ -101,5 +106,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(req.getId())
                 .orElseThrow(EntityNotFoundException::new);
         user.setPassword(passwordEncoder.encode(req.getPassword()));
+        userRepository.save(user);
+
+        return user.getId();
     }
 }
