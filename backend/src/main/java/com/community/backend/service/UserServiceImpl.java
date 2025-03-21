@@ -1,10 +1,7 @@
 package com.community.backend.service;
 
 import com.community.backend.domain.User;
-import com.community.backend.dto.PasswordRequest;
-import com.community.backend.dto.UserDTO;
-import com.community.backend.dto.UserJoinRequest;
-import com.community.backend.dto.UserLoginRequest;
+import com.community.backend.dto.*;
 import com.community.backend.repository.UserRepository;
 import com.community.backend.util.EmailValidator;
 import com.community.backend.util.ImageValidator;
@@ -69,7 +66,15 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
 
-        return new UserDTO(id, user.getNickname(), user.getProfileImgUrl());
+        return new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
+    }
+
+    @Override
+    public ProfileResponse getProfile(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+
+        return new ProfileResponse(user.getEmail(), user.getNickname(), user.getProfileImgUrl());
     }
 
     @Override
