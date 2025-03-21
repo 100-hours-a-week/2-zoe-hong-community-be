@@ -1,62 +1,60 @@
-package com.community.backend;
+package com.community.backend.RepositoryTest;
 
-import com.community.backend.domain.Liked;
-import com.community.backend.domain.LikedId;
+import com.community.backend.domain.Comment;
 import com.community.backend.domain.Post;
 import com.community.backend.domain.User;
-import com.community.backend.repository.LikedRepository;
+import com.community.backend.repository.CommentRepository;
 import com.community.backend.repository.PostRepository;
 import com.community.backend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @SpringBootTest
 @Transactional
-public class LikedRepositoryTest {
-    @Autowired LikedRepository likedRepository;
+public class CommentRepositoryTest {
+    @Autowired CommentRepository commentRepository;
     @Autowired UserRepository userRepository;
     @Autowired PostRepository postRepository;
 
     @Test
     public void save() {
         // given
-        Liked liked = new Liked();
         User user = userRepository.findById(1L)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Post post = postRepository.findById(1L)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        LikedId likedId = new LikedId(user.getId(), post.getId());
-        liked.setId(likedId);
-        liked.setUser(user);
-        liked.setPost(post);
+        Comment comment = new Comment();
+        comment.setUser(user);
+        comment.setPost(post);
+        comment.setContent("Comment Content");
 
         // when
-        likedRepository.save(liked);
+        commentRepository.save(comment);
 
         // then
-        assert likedRepository.count() == 1;
+        assert commentRepository.findById(comment.getId()).get().getContent().equals(comment.getContent());
     }
 
     @Test
     public void findByPostId() {
         // when
-        List<Liked> likedList = likedRepository.findByPostId(1L);
+        List<Comment> comments = commentRepository.findByPostId(1L);
 
         // then
-        assert likedList.size() == 1;
+        assert comments.size() == 1;
     }
 
     @Test
-    public void findByUserIdAndPostId() {
+    public void findAll() {
         // when
-        Liked liked = likedRepository.findByUserIdAndPostId(1L, 1L).get();
+        List<Comment> comments = commentRepository.findAll();
 
         // then
-        assert liked != null;
+        assert comments.size() == 1;
     }
+
 }

@@ -1,4 +1,4 @@
-package com.community.backend;
+package com.community.backend.RepositoryTest;
 
 import com.community.backend.domain.User;
 import com.community.backend.repository.UserRepository;
