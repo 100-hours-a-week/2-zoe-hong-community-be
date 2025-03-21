@@ -9,8 +9,7 @@ public interface UserService {
     // 회원
     Long join(UserJoinRequest req);
     void delete(Long id);
-    UserDTO findById(Long id);
     ProfileResponse getProfile(Long id);
-    Long updateInfo(UserDTO dto);
+    Long updateInfo(ProfileRequest req);
     Long updatePassword(PasswordRequest req);
 }

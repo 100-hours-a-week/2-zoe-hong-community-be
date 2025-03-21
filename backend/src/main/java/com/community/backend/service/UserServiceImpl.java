@@ -1,6 +1,7 @@
 package com.community.backend.service;
 
 import com.community.backend.domain.User;
+import com.community.backend.domain.enums.UserState;
 import com.community.backend.dto.*;
 import com.community.backend.repository.UserRepository;
 import com.community.backend.util.EmailValidator;
@@ -11,6 +12,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,11 @@ public class UserServiceImpl implements UserService {
         passwordValidator.checkPassword(req.getPassword());
         if(!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 탈퇴 여부
+        if (user.getDeletedAt() != null) {
+            throw new IllegalStateException("이미 탈퇴한 사용자입니다.");
         }
 
         return user.getId();
@@ -61,15 +70,10 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
-        userRepository.delete(user);
-    }
 
-    @Override
-    public UserDTO findById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(EntityNotFoundException::new);
-
-        return new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
+        user.setState(UserState.DELETED);
+        user.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
+        userRepository.save(user);
     }
 
     @Override
@@ -81,17 +85,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long updateInfo(UserDTO dto) {
-        User user = userRepository.findById(dto.getId())
+    public Long updateInfo(ProfileRequest req) {
+        User user = userRepository.findById(req.getId())
                 .orElseThrow(EntityNotFoundException::new);
 
         // 유효성 검사
-        nicknameValidator.checkNickname(dto.getNickname());
-        imageValidator.checkImage(dto.getProfileImgUrl());
+        nicknameValidator.checkNickname(req.getNickname());
+        imageValidator.checkImage(req.getProfileImgUrl());
 
         // 업데이트
-        user.setProfileImgUrl(dto.getProfileImgUrl());
-        user.setNickname(dto.getNickname());
+        user.setProfileImgUrl(req.getProfileImgUrl());
+        user.setNickname(req.getNickname());
         userRepository.save(user);
 
         return user.getId();
