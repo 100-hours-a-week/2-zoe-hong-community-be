@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,19 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(comment);
 
         return comment.getId();
+    }
+
+    @Override
+    public Long update(Long commentId, CommentRequest req) {
+        Comment comment = commentRepository.findById(commentId).orElse(null);
+        if (!Objects.equals(comment.getUser().getId(), req.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "댓글을 수정할 권한이 없습니다.");
+        }
+
+        comment.setContent(req.getContent());
+        commentRepository.save(comment);
+
+        return commentId;
     }
 
     @Override
