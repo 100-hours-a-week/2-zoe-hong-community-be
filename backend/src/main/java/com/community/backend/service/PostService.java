@@ -8,10 +8,11 @@ import java.util.List;
 
 public interface PostService {
     List<PostCardDTO> getPostList();
-    PostDTO getPostById(Long id);
+    PostDTO getPostById(Long postId);
     Long save(PostRequest req);
-    void delete(Long userId, Long postId);
+    Long update(Long postId, PostRequest req);
+    void delete(Long postId, Long userId);
 
     // 좋아요
-    Boolean isLiked(Long userId, Long postId);
+    Boolean toggleLike(Long userId, Long postId);
 }
