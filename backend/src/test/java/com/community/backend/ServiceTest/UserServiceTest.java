@@ -75,7 +75,7 @@ public class UserServiceTest {
         ProfileRequest req = new ProfileRequest(15L, "nickname1", "changeurl");
 
         // when
-        Long id = userService.updateInfo(req);
+        Long id = userService.updateProfile(req);
 
         // then
         assert userRepository.findById(15L).get().getNickname().equals(userRepository.findById(id).get().getNickname());

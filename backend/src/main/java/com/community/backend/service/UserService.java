@@ -10,6 +10,6 @@ public interface UserService {
     Long join(UserJoinRequest req);
     void delete(Long id);
     ProfileResponse getProfile(Long id);
-    Long updateInfo(ProfileRequest req);
+    Long updateProfile(ProfileRequest req);
     Long updatePassword(PasswordRequest req);
 }

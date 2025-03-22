@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long updateInfo(ProfileRequest req) {
+    public Long updateProfile(ProfileRequest req) {
         User user = userRepository.findById(req.getId())
                 .orElseThrow(EntityNotFoundException::new);
 
