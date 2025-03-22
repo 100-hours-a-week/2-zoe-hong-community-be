@@ -32,7 +32,7 @@ public class Post {
     private String imageUrl;
 
     @Column(name = "view_count", nullable = false)
-    private Long viewCount;
+    private Long viewCount = 0L;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
