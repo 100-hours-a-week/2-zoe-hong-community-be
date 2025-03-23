@@ -37,7 +37,7 @@ public class PostServiceImpl implements PostService {
 
         postRepository.findAll().forEach(post -> {
             User user = post.getUser();
-            UserDTO userDTO = new UserDTO(user.getNickname(), user.getProfileImgUrl());
+            UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
             Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
             Long commentCount = (long) commentRepository.findByPostId(post.getId()).size();
@@ -61,7 +61,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId).orElseThrow(EntityNotFoundException::new);
 
         User user = userRepository.findById(post.getUser().getId()).orElseThrow(EntityNotFoundException::new);
-        UserDTO userDTO = new UserDTO(user.getNickname(), user.getProfileImgUrl());
+        UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
         Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
         Long commentCount = (long) commentRepository.findByPostId(post.getId()).size();

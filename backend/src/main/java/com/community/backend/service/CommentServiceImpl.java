@@ -31,7 +31,7 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.findAll().forEach(comment -> {
             User user = comment.getUser();
-            UserDTO userDTO = new UserDTO(user.getNickname(), user.getProfileImgUrl());
+            UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
             CommentDTO dto = new CommentDTO(
                     comment.getId(),
