@@ -45,10 +45,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Long save(CommentRequest req) {
+    public Long save(Long userId, Long postId, CommentRequest req) {
         Comment comment = new Comment();
-        comment.setPost(postRepository.findById(req.getPostId()).orElse(null));
-        comment.setUser(userRepository.findById(req.getUserId()).orElse(null));
+        comment.setPost(postRepository.findById(postId).orElse(null));
+        comment.setUser(userRepository.findById(userId).orElse(null));
         comment.setContent(req.getContent());
         commentRepository.save(comment);
 
@@ -56,9 +56,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Long update(Long commentId, CommentRequest req) {
+    public Long update(Long userId, Long commentId, CommentRequest req) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
-        if (!Objects.equals(comment.getUser().getId(), req.getUserId())) {
+        if (!Objects.equals(comment.getUser().getId(), userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "댓글을 수정할 권한이 없습니다.");
         }
 

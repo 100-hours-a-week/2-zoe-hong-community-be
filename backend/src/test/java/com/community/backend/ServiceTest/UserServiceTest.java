@@ -28,17 +28,17 @@ public class UserServiceTest {
         );
 
         // when
-        Long id = userService.join(req);
+        String username = userService.join(req);
 
         // then
-        User findUser = userRepository.findById(id).get();
-        assert findUser.getEmail().equals(req.getEmail());
+        User findUser = userRepository.findByEmail(req.getEmail()).get();
+        assert findUser.getNickname().equals(username);
     }
 
     @Test
     public void 회원탈퇴() {
         // when
-        userService.delete(11L);
+        userService.delete(15L);
 
         // then
         assert userRepository.findById(11L).get().getState().equals(UserState.DELETED);
@@ -72,26 +72,26 @@ public class UserServiceTest {
     @Test
     public void 회원정보수정() {
         // given
-        ProfileRequest req = new ProfileRequest(15L, "nickname1", "changeurl");
+        Long userId = 1L;
+        ProfileRequest req = new ProfileRequest("nickname1", "changeurl");
 
         // when
-        Long id = userService.updateInfo(req);
+        String username = userService.updateProfile(userId, req);
 
         // then
-        assert userRepository.findById(15L).get().getNickname().equals(userRepository.findById(id).get().getNickname());
-        assert userRepository.findById(15L).get().getEmail().equals(userRepository.findById(id).get().getEmail());
+        assert userRepository.findById(15L).get().getNickname().equals(username);
     }
 
     @Test
     public void 비밀번호수정() {
         // given
-        PasswordRequest req = new PasswordRequest(15L, "cC!1word");
+        Long userId = 15L;
+        PasswordRequest req = new PasswordRequest("cC!1word");
 
         // when
-        Long id = userService.updatePassword(req);
+        String username = userService.updatePassword(userId, req);
 
         // then
-        assert userRepository.findById(15L).get().getEmail().equals(userRepository.findById(id).get().getEmail());
-        assert userRepository.findById(15L).get().getPassword().equals(userRepository.findById(id).get().getPassword());
+        assert userRepository.findById(15L).get().getNickname().equals(username);
     }
 }
