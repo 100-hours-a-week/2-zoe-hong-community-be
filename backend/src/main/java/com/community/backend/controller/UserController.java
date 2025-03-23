@@ -17,7 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<?> join(HttpSession session, @RequestBody UserJoinRequest req) {
+    public ResponseEntity<?> join(HttpSession session, @ModelAttribute UserJoinRequest req) {
         UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
         if (user != null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "로그인 상태에서는 해당 기능을 이용할 수 없습니다.");

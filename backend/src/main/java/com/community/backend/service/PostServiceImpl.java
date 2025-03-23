@@ -12,6 +12,7 @@ import com.community.backend.repository.CommentRepository;
 import com.community.backend.repository.LikedRepository;
 import com.community.backend.repository.PostRepository;
 import com.community.backend.repository.UserRepository;
+import com.community.backend.util.ImageHandler;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +30,7 @@ public class PostServiceImpl implements PostService {
     private final LikedRepository likedRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final ImageHandler imageHandler;
 
     @Override
     public List<PostCardDTO> getPostList() {
@@ -83,7 +84,7 @@ public class PostServiceImpl implements PostService {
         Post post = new Post();
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setImageUrl(req.getImageUrl());
+        post.setImageUrl(imageHandler.saveImage(req.getImage()));
         post.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
         postRepository.save(post);
 
@@ -99,7 +100,7 @@ public class PostServiceImpl implements PostService {
 
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setImageUrl(req.getImageUrl());
+        post.setImageUrl(imageHandler.saveImage(req.getImage()));
 
         postRepository.save(post);
         return post.getId();

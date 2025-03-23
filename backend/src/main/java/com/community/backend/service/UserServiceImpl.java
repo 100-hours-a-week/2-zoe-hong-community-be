@@ -5,13 +5,14 @@ import com.community.backend.domain.enums.UserState;
 import com.community.backend.dto.*;
 import com.community.backend.repository.UserRepository;
 import com.community.backend.util.EmailValidator;
-import com.community.backend.util.ImageValidator;
+import com.community.backend.util.ImageHandler;
 import com.community.backend.util.NicknameValidator;
 import com.community.backend.util.PasswordValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordValidator passwordValidator;
     private final PasswordEncoder passwordEncoder;
     private final NicknameValidator nicknameValidator;
-    private final ImageValidator imageValidator;
+    private final ImageHandler imageHandler;
 
     @Override
     public Long login(UserLoginRequest req) {
@@ -50,14 +51,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public String join(UserJoinRequest req) {
         // 유효성 검사
-        imageValidator.checkImage(req.getProfileImgUrl());
+        MultipartFile profileImage = req.getProfileImg();
         emailValidator.checkEmail(req.getEmail());
         passwordValidator.checkPassword(req.getPassword());
         nicknameValidator.checkNickname(req.getNickname());
 
         // 회원가입
         User user = new User();
-        user.setProfileImgUrl(req.getProfileImgUrl());
+        user.setProfileImgUrl(imageHandler.saveImage(profileImage));
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setNickname(req.getNickname());
@@ -95,10 +96,9 @@ public class UserServiceImpl implements UserService {
 
         // 유효성 검사
         nicknameValidator.checkNickname(req.getNickname());
-        imageValidator.checkImage(req.getProfileImgUrl());
 
         // 업데이트
-        user.setProfileImgUrl(req.getProfileImgUrl());
+        user.setProfileImgUrl(imageHandler.saveImage(req.getProfileImg()));
         user.setNickname(req.getNickname());
         userRepository.save(user);
 
