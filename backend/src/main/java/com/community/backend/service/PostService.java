@@ -14,5 +14,6 @@ public interface PostService {
     void delete(Long userId, Long postId);
 
     // 좋아요
-    Boolean toggleLike(Long userId, Long postId);
+    Long toggleLike(Long userId, Long postId);
+    Boolean isLiked(Long userId, Long postId);
 }

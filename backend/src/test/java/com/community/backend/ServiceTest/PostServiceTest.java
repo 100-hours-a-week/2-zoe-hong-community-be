@@ -3,6 +3,7 @@ package com.community.backend.ServiceTest;
 import com.community.backend.dto.PostCardDTO;
 import com.community.backend.dto.PostDTO;
 import com.community.backend.dto.PostRequest;
+import com.community.backend.repository.LikedRepository;
 import com.community.backend.repository.PostRepository;
 import com.community.backend.service.PostService;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ public class PostServiceTest {
 
     @Autowired private PostService postService;
     @Autowired private PostRepository postRepository;
+    @Autowired
+    private LikedRepository likedRepository;
 
     @Test
     public void 게시글_목록_조회() {
@@ -95,9 +98,9 @@ public class PostServiceTest {
         Long userId = 1L;
 
         // when
-        Boolean result = postService.toggleLike(postId, userId);
+        Long result = postService.toggleLike(postId, userId);
 
         // then
-        assert !result;
+        assert result == likedRepository.findByPostId(postId).size();
     }
 }

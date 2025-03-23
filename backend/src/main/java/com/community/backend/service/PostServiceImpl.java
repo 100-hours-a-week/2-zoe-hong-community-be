@@ -118,22 +118,37 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Boolean toggleLike(Long userId, Long postId) {
-        Optional<Liked> liked = likedRepository.findByUserIdAndPostId(userId, postId);
-
-        if (liked.isPresent()) {
-            likedRepository.delete(liked.get());
-            return false;
+    public Long toggleLike(Long userId, Long postId) {
+        if (isLiked(userId, postId)) {
+            unlike(userId, postId);
         } else {
-            LikedId likedId = new LikedId(userId, postId);
-
-            Liked newLike = new Liked();
-            newLike.setId(likedId);
-            newLike.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
-            newLike.setPost(postRepository.findById(postId).orElseThrow(EntityNotFoundException::new));
-
-            likedRepository.save(newLike);
-            return true;
+            like(userId, postId);
         }
+        return getLikeCount(postId);
+    }
+
+    @Override
+    public Boolean isLiked(Long userId, Long postId) {
+        return likedRepository.findByPostId(postId).stream().anyMatch(like -> like.getUser().getId().equals(userId));
+    }
+
+    private void unlike(Long userId, Long postId) {
+        likedRepository.findByUserIdAndPostId(userId, postId)
+                .ifPresent(likedRepository::delete);
+    }
+
+    private void like(Long userId, Long postId) {
+        LikedId likedId = new LikedId(userId, postId);
+        Liked liked = new Liked();
+
+        liked.setId(likedId);
+        liked.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
+        liked.setPost(postRepository.findById(postId).orElseThrow(EntityNotFoundException::new));
+
+        likedRepository.save(liked);
+    }
+
+    private Long getLikeCount(Long postId) {
+        return (long) likedRepository.findByPostId(postId).size();
     }
 }
