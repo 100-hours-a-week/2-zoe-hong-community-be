@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 @Getter
 @AllArgsConstructor
 public class CommentDTO {
-    private Long id;
+    private Long commentId;
     private String content;
     private Timestamp createdAt;
     private UserDTO user;

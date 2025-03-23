@@ -37,7 +37,7 @@ public class PostServiceImpl implements PostService {
 
         postRepository.findAll().forEach(post -> {
             User user = post.getUser();
-            UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
+            UserDTO userDTO = new UserDTO(user.getNickname(), user.getProfileImgUrl());
 
             Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
             Long commentCount = (long) commentRepository.findByPostId(post.getId()).size();
@@ -61,7 +61,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId).orElseThrow(EntityNotFoundException::new);
 
         User user = userRepository.findById(post.getUser().getId()).orElseThrow(EntityNotFoundException::new);
-        UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
+        UserDTO userDTO = new UserDTO(user.getNickname(), user.getProfileImgUrl());
 
         Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
         Long commentCount = (long) commentRepository.findByPostId(post.getId()).size();
@@ -79,21 +79,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Long save(PostRequest req) {
+    public Long save(Long userId, PostRequest req) {
         Post post = new Post();
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
         post.setImageUrl(req.getImageUrl());
-        post.setUser(userRepository.findById(req.getCreatedBy()).orElseThrow(EntityNotFoundException::new));
+        post.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
         postRepository.save(post);
 
         return post.getId();
     }
 
     @Override
-    public Long update(Long postId, PostRequest req) {
+    public Long update(Long userId, Long postId, PostRequest req) {
         Post post = postRepository.findById(postId).orElseThrow(EntityNotFoundException::new);
-        if (!post.getUser().getId().equals(req.getCreatedBy())) {
+        if (!post.getUser().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "게시물을 수정할 권한이 없습니다.");
         }
 
@@ -106,7 +106,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void delete(Long postId, Long userId) {
+    public void delete(Long userId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
 
@@ -126,10 +126,12 @@ public class PostServiceImpl implements PostService {
             return false;
         } else {
             LikedId likedId = new LikedId(userId, postId);
+
             Liked newLike = new Liked();
             newLike.setId(likedId);
             newLike.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
             newLike.setPost(postRepository.findById(postId).orElseThrow(EntityNotFoundException::new));
+
             likedRepository.save(newLike);
             return true;
         }

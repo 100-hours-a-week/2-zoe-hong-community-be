@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long join(UserJoinRequest req) {
+    public String join(UserJoinRequest req) {
         // 유효성 검사
         imageValidator.checkImage(req.getProfileImgUrl());
         emailValidator.checkEmail(req.getEmail());
@@ -63,13 +63,17 @@ public class UserServiceImpl implements UserService {
         user.setNickname(req.getNickname());
         userRepository.save(user);
 
-        return user.getId();
+        return user.getNickname();
     }
 
     @Override
-    public void delete(Long id) {
-        User user = userRepository.findById(id)
+    public void delete(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
+
+        if (user.getDeletedAt() != null) {
+            throw new RuntimeException("이미 탈퇴한 회원입니다.");
+        }
 
         user.setState(UserState.DELETED);
         user.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
@@ -77,16 +81,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ProfileResponse getProfile(Long id) {
-        User user = userRepository.findById(id)
+    public ProfileResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
         return new ProfileResponse(user.getEmail(), user.getNickname(), user.getProfileImgUrl());
     }
 
     @Override
-    public Long updateProfile(ProfileRequest req) {
-        User user = userRepository.findById(req.getId())
+    public String updateProfile(Long userId, ProfileRequest req) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
         // 유효성 검사
@@ -98,20 +102,20 @@ public class UserServiceImpl implements UserService {
         user.setNickname(req.getNickname());
         userRepository.save(user);
 
-        return user.getId();
+        return user.getNickname();
     }
 
     @Override
-    public Long updatePassword(PasswordRequest req) {
+    public String updatePassword(Long userId, PasswordRequest req) {
         // 유효성 검사
         passwordValidator.checkPassword(req.getPassword());
 
         // 업데이트
-        User user = userRepository.findById(req.getId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
 
-        return user.getId();
+        return user.getNickname();
     }
 }

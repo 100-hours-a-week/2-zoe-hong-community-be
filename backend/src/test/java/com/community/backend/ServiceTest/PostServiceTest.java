@@ -43,15 +43,15 @@ public class PostServiceTest {
     @Test
     public void 게시글_추가() {
         // given
+        Long userId = 1L;
         PostRequest req = new PostRequest(
                 "title",
                 "content",
-                "image url",
-                1L
+                "image url"
         );
 
         // when
-        Long postId = postService.save(req);
+        Long postId = postService.save(userId, req);
 
         // then
         assert postRepository.findById(postId).get().getTitle().equals(req.getTitle());
@@ -60,16 +60,16 @@ public class PostServiceTest {
     @Test
     public void 게시글_수정() {
         // given
+        Long userId = 1L;
         Long postId = 1L;
         PostRequest req = new PostRequest(
                 "new title",
                 "content",
-                "image url",
-                1L
+                "image url"
         );
 
         // when
-        Long result = postService.update(postId, req);
+        Long result = postService.update(userId, postId, req);
 
         // then
         assert postRepository.findById(result).get().getTitle().equals(req.getTitle());
@@ -82,7 +82,7 @@ public class PostServiceTest {
         Long userId = 1L;
 
         // when
-        postService.delete(postId, userId);
+        postService.delete(userId, postId);
 
         // then
         assert postRepository.findById(postId).isEmpty();

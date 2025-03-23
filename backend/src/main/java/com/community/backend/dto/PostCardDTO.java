@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 @Getter
 @AllArgsConstructor
 public class PostCardDTO {
-    private Long id;
+    private Long postId;
     private String title;
     private UserDTO createdBy;
     private Timestamp createdAt;
