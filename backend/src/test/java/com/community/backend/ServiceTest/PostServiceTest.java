@@ -50,7 +50,7 @@ public class PostServiceTest {
         PostRequest req = new PostRequest(
                 "title",
                 "content",
-                "image url"
+                null
         );
 
         // when
@@ -68,7 +68,7 @@ public class PostServiceTest {
         PostRequest req = new PostRequest(
                 "new title",
                 "content",
-                "image url"
+                null
         );
 
         // when

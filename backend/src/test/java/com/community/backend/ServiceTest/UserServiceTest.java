@@ -24,7 +24,7 @@ public class UserServiceTest {
                 "email1@gmail.com",
                 "Pp1!word",
                 "nickname1",
-                "url"
+                "url.jpg"
         );
 
         // when
