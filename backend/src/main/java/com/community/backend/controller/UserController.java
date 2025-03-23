@@ -64,7 +64,7 @@ public class UserController {
     }
 
     @PatchMapping("self/info")
-    public ResponseEntity<?> updateProfile(HttpSession session, @RequestBody ProfileRequest req) {
+    public ResponseEntity<?> updateProfile(HttpSession session, @ModelAttribute ProfileRequest req) {
         UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");

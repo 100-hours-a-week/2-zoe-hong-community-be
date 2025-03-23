@@ -38,7 +38,7 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createPost(HttpSession session, @RequestBody PostRequest req) {
+    public ResponseEntity<?> createPost(HttpSession session, @ModelAttribute PostRequest req) {
         UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
@@ -70,7 +70,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public ResponseEntity<?> updatePost(HttpSession session, @PathVariable Long postId, @RequestBody PostRequest req) {
+    public ResponseEntity<?> updatePost(HttpSession session, @PathVariable Long postId, @ModelAttribute PostRequest req) {
         UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");

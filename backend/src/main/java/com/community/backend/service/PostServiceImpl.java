@@ -84,7 +84,7 @@ public class PostServiceImpl implements PostService {
         Post post = new Post();
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setImageUrl(imageHandler.saveImage(req.getImage()));
+        post.setImageUrl(imageHandler.saveImage(req.getImage(), false));
         post.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
         postRepository.save(post);
 
@@ -100,7 +100,7 @@ public class PostServiceImpl implements PostService {
 
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setImageUrl(imageHandler.saveImage(req.getImage()));
+        post.setImageUrl(imageHandler.saveImage(req.getImage(), false));
 
         postRepository.save(post);
         return post.getId();

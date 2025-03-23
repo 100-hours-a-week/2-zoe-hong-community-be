@@ -58,10 +58,13 @@ public class UserServiceImpl implements UserService {
 
         // 회원가입
         User user = new User();
-        user.setProfileImgUrl(imageHandler.saveImage(profileImage));
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setNickname(req.getNickname());
+        userRepository.save(user);
+
+        // 이미지 저장
+        user.setProfileImgUrl(imageHandler.saveImage(profileImage, true));
         userRepository.save(user);
 
         return user.getNickname();
@@ -98,8 +101,11 @@ public class UserServiceImpl implements UserService {
         nicknameValidator.checkNickname(req.getNickname());
 
         // 업데이트
-        user.setProfileImgUrl(imageHandler.saveImage(req.getProfileImg()));
         user.setNickname(req.getNickname());
+        userRepository.save(user);
+
+        // 이미지 저장
+        user.setProfileImgUrl(imageHandler.saveImage(req.getProfileImg(), true));
         userRepository.save(user);
 
         return user.getNickname();
