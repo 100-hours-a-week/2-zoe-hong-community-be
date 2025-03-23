@@ -45,9 +45,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Long save(Long userId, CommentRequest req) {
+    public Long save(Long userId, Long postId, CommentRequest req) {
         Comment comment = new Comment();
-        comment.setPost(postRepository.findById(req.getPostId()).orElse(null));
+        comment.setPost(postRepository.findById(postId).orElse(null));
         comment.setUser(userRepository.findById(userId).orElse(null));
         comment.setContent(req.getContent());
         commentRepository.save(comment);

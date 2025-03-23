@@ -33,14 +33,13 @@ public class CommentServiceTest {
     public void 댓글_추가() {
         // given
         Long userId = 1L;
+        Long postId = 1L;
         CommentRequest req = new CommentRequest(
-                1L,
-                1L,
                 "content"
         );
 
         // when
-        Long commentId = commentService.save(userId, req);
+        Long commentId = commentService.save(userId, postId, req);
 
         // then
         assert commentRepository.existsById(commentId);
@@ -53,8 +52,6 @@ public class CommentServiceTest {
         Long userId = 1L;
         Long commentId = 1L;
         CommentRequest req = new CommentRequest(
-                1L,
-                1L,
                 "new content"
         );
 
