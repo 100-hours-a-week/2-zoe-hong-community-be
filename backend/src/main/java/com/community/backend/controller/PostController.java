@@ -129,6 +129,23 @@ public class PostController {
     /**
      * 좋아요
      */
+    @GetMapping("/{postId}/like")
+    public ResponseEntity<?> isLiked(HttpSession session, @PathVariable Long postId) {
+        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
+        if (user == null) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
+        }
+
+        try {
+            Boolean liked = postService.isLiked(user.getUserId(), postId);
+            return ResponseEntity.ok().body(Map.of(
+                    "success", true,
+                    "liked", liked
+            ));
+        } catch (RuntimeException e) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<?> likePost(HttpSession session, @PathVariable Long postId) {
