@@ -61,9 +61,6 @@ public class UserServiceImpl implements UserService {
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setNickname(req.getNickname());
-        userRepository.save(user);
-
-        // 이미지 저장
         user.setProfileImgUrl(imageHandler.saveImage(profileImage, true));
         userRepository.save(user);
 
@@ -102,9 +99,7 @@ public class UserServiceImpl implements UserService {
 
         // 업데이트
         user.setNickname(req.getNickname());
-        userRepository.save(user);
-
-        // 이미지 저장
+        user.setProfileImgUrl("");
         user.setProfileImgUrl(imageHandler.saveImage(req.getProfileImg(), true));
         userRepository.save(user);
 
