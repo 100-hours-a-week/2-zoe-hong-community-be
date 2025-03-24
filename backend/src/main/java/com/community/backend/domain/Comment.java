@@ -26,7 +26,7 @@ public class Comment {
     @JoinColumn(name = "post_id", referencedColumnName = "id", updatable = false, nullable = false)
     private Post post;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @CreatedDate
