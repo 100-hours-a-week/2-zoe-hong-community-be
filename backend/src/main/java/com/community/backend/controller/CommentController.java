@@ -40,7 +40,7 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createComment(HttpSession session, Long postId, @RequestBody CommentRequest req) {
+    public ResponseEntity<?> createComment(HttpSession session, @PathVariable Long postId, @RequestBody CommentRequest req) {
         UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
         if (user == null) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
