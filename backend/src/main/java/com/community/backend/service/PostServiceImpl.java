@@ -93,7 +93,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Long update(Long userId, Long postId, PostRequest req) {
-        Post post = postRepository.findById(postId).orElseThrow(EntityNotFoundException::new);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(EntityNotFoundException::new);
+
         if (!post.getUser().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "게시물을 수정할 권한이 없습니다.");
         }
@@ -109,10 +111,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public void delete(Long userId, Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow((EntityNotFoundException::new));
 
         if (!post.getUser().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 게시글을 수정/삭제할 권한이 없습니다.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "게시글을 삭제할 권한이 없습니다.");
         }
 
         postRepository.delete(post);
