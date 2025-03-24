@@ -29,7 +29,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentDTO> getCommentList(Long postId) {
         List<CommentDTO> res = new ArrayList<>();
 
-        commentRepository.findAll().forEach(comment -> {
+        commentRepository.findByPostId(postId).forEach(comment -> {
             User user = comment.getUser();
             UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
