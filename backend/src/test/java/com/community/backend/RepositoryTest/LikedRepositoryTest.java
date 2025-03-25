@@ -42,12 +42,15 @@ public class LikedRepositoryTest {
     }
 
     @Test
-    public void findByPostId() {
+    public void countValidLikesByPostId() {
+        // given
+        Long postId = 1L;
+
         // when
-        List<Liked> likedList = likedRepository.findByPostId(1L);
+        Long likedCount = likedRepository.countValidLikesByPostId(1L);
 
         // then
-        assert likedList.size() == 1;
+        assert likedCount == 3;
     }
 
     @Test
