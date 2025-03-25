@@ -2,6 +2,7 @@ package com.community.backend.service;
 
 import com.community.backend.domain.Comment;
 import com.community.backend.domain.User;
+import com.community.backend.domain.enums.UserState;
 import com.community.backend.dto.CommentDTO;
 import com.community.backend.dto.CommentRequest;
 import com.community.backend.dto.UserDTO;
@@ -29,7 +30,10 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentDTO> getCommentList(Long postId) {
         List<CommentDTO> res = new ArrayList<>();
 
-        commentRepository.findByPostId(postId).forEach(comment -> {
+        for (Comment comment : commentRepository.findByPostId(postId)) {
+            if (comment.getUser().getState() == UserState.DELETED) {
+                continue;
+            }
             User user = comment.getUser();
             UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
@@ -40,7 +44,7 @@ public class CommentServiceImpl implements CommentService {
                     userDTO
             );
             res.add(dto);
-        });
+        }
         return res;
     }
 
