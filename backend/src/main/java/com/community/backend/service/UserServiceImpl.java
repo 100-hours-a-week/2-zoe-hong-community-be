@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
     private final ImageHandler imageHandler;
 
     @Override
-    public Long login(UserLoginRequest req) {
+    public UserDTO login(UserLoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
 
@@ -41,15 +41,19 @@ public class UserServiceImpl implements UserService {
         }
 
         // 탈퇴 여부
-        if (user.getDeletedAt() != null) {
+        if (user.getState() == UserState.DELETED) {
             throw new IllegalStateException("이미 탈퇴한 사용자입니다.");
         }
 
-        return user.getId();
+        return new UserDTO(
+                user.getId(),
+                user.getNickname(),
+                user.getProfileImgUrl()
+        );
     }
 
     @Override
-    public String join(UserJoinRequest req) {
+    public Long join(UserJoinRequest req) {
         // 유효성 검사
         MultipartFile profileImage = req.getProfileImg();
         emailValidator.checkEmail(req.getEmail());
@@ -61,10 +65,10 @@ public class UserServiceImpl implements UserService {
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setNickname(req.getNickname());
-        user.setProfileImgUrl(imageHandler.saveImage(profileImage, true));
+        user.setProfileImgUrl(imageHandler.saveImage(profileImage));
         userRepository.save(user);
 
-        return user.getNickname();
+        return user.getId();
     }
 
     @Override
@@ -72,7 +76,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        if (user.getDeletedAt() != null) {
+        if (user.getState() == UserState.DELETED) {
             throw new RuntimeException("이미 탈퇴한 회원입니다.");
         }
 
@@ -90,24 +94,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateProfile(Long userId, ProfileRequest req) {
+    public UserDTO updateProfile(Long userId, ProfileRequest req) {
         User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
         // 유효성 검사
-        nicknameValidator.checkNickname(req.getNickname());
+        if (!user.getNickname().equals(req.getNickname())) {
+            nicknameValidator.checkNickname(req.getNickname());
+        }
 
         // 업데이트
         user.setNickname(req.getNickname());
-        user.setProfileImgUrl("");
-        user.setProfileImgUrl(imageHandler.saveImage(req.getProfileImg(), true));
+        System.out.println(req.getProfileImg());
+        if (req.getProfileImg() != null) {
+            user.setProfileImgUrl(imageHandler.saveImage(req.getProfileImg()));
+        }
         userRepository.save(user);
 
-        return user.getNickname();
+        return new UserDTO(
+          user.getId(),
+          user.getNickname(),
+          user.getProfileImgUrl()
+        );
     }
 
     @Override
-    public String updatePassword(Long userId, PasswordRequest req) {
+    public Long updatePassword(Long userId, PasswordRequest req) {
         // 유효성 검사
         passwordValidator.checkPassword(req.getPassword());
 
@@ -117,6 +129,6 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
 
-        return user.getNickname();
+        return user.getId();
     }
 }

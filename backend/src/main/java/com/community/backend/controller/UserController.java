@@ -1,10 +1,7 @@
 package com.community.backend.controller;
 
 import com.community.backend.common.exception.CustomException;
-import com.community.backend.dto.PasswordRequest;
-import com.community.backend.dto.ProfileRequest;
-import com.community.backend.dto.UserJoinRequest;
-import com.community.backend.dto.UserSessionDTO;
+import com.community.backend.dto.*;
 import com.community.backend.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +26,9 @@ public class UserController {
         }
 
         try {
-            String username = userService.join(req);
+            Long id = userService.join(req);
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "success", true,
-                    "nickname", username
+                    "success", true
             ));
         } catch (IllegalArgumentException e) {
             throw new CustomException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -50,14 +46,14 @@ public class UserController {
 
         try {
             userService.delete(user.getUserId());
-            session.invalidate();
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
                     "id", user.getUserId()
             ));
-
         } catch (Exception e) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            session.invalidate();
         }
     }
 
@@ -86,10 +82,10 @@ public class UserController {
         }
 
         try {
-            String username = userService.updateProfile(user.getUserId(), req);
+            UserDTO res = userService.updateProfile(user.getUserId(), req);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
-                    "nickname", username
+                    "user", res
             ));
         } catch (IllegalArgumentException e) {
             throw new CustomException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -106,10 +102,9 @@ public class UserController {
         }
 
         try {
-            String username = userService.updatePassword(user.getUserId(), req);
+            Long userId = userService.updatePassword(user.getUserId(), req);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                    "success", true,
-                    "nickname", username
+                    "success", true
             ));
         } catch (IllegalArgumentException e) {
             throw new CustomException(HttpStatus.BAD_REQUEST, e.getMessage());
