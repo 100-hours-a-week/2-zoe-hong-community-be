@@ -18,14 +18,9 @@ public class ImageHandler {
         }
     }
 
-    public static String saveImage(MultipartFile image, Boolean isEssential) {
-        if (!isEssential && (image == null || image.isEmpty())) {
-            return null; // 이미지가 선택 사항이고 비어있으면 null 반환
-        }
+    public static String saveImage(MultipartFile image) {
+        validate(image);
 
-        if (isEssential) {
-            validate(image);
-        }
         try {
             String originalName = image.getOriginalFilename();
             if (originalName == null || !originalName.contains(".")) {
