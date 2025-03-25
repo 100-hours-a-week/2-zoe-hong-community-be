@@ -7,13 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @SpringBootTest
 @Transactional
 class UserRepositoryTest {
 
-    @Autowired private UserRepository repository;
+    @Autowired private UserRepository userRepository;
 
     @Test
     public void save() {
@@ -25,38 +23,65 @@ class UserRepositoryTest {
         user.setProfileImgUrl("url");
 
         // when
-        repository.save(user);
+        userRepository.save(user);
 
         // then
-        User result = repository.findByEmail(user.getEmail()).orElse(null);
-        assert result.getEmail() == user.getEmail();
+        User result = userRepository.findByEmail(user.getEmail()).orElse(null);
+        assert result.getEmail().equals(user.getEmail());
     }
 
     @Test
     public void findById() {
+        // given
+        User user = new User();
+        user.setEmail("test1@test.com");
+        user.setPassword("password");
+        user.setNickname("test1");
+        user.setProfileImgUrl("url");
+        userRepository.save(user);
+
         // when
-        User user = repository.findById(1L)
+        User resultUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // then
-        assert user.getId() == 1L;
+        assert resultUser.getId().equals(user.getId());
     }
 
     @Test
     public void findByEmail() {
+        // given
+        String email = "test1@test.com";
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword("password");
+        user.setNickname("test1");
+        user.setProfileImgUrl("url");
+        userRepository.save(user);
+
         // when
-        User user = repository.findByEmail("test@test.com").get();
+        User resultUser = userRepository.findByEmail(email).get();
 
         // then
-        assert user.getEmail().equals("test@test.com");
+        assert resultUser.getEmail().equals(email);
     }
 
     @Test
     public void findAll() {
+        // given
+        int prevCount = userRepository.findAll().size();
+        // given
+        User user = new User();
+        user.setEmail("test1@test.com");
+        user.setPassword("password");
+        user.setNickname("test1");
+        user.setProfileImgUrl("url");
+        userRepository.save(user);
+
         // when
-        List<User> result = repository.findAll();
+        int presCount = userRepository.findAll().size();
 
         // then
-        assert result.size() == 1;
+        assert presCount == prevCount + 1;
     }
 }

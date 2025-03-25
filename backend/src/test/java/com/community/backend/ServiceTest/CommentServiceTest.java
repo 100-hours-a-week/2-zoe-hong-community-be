@@ -1,12 +1,14 @@
 package com.community.backend.ServiceTest;
 
-import com.community.backend.dto.CommentDTO;
-import com.community.backend.dto.CommentRequest;
+import com.community.backend.dto.*;
 import com.community.backend.repository.CommentRepository;
 import com.community.backend.service.CommentService;
+import com.community.backend.service.PostService;
+import com.community.backend.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -14,15 +16,40 @@ import java.util.List;
 @SpringBootTest
 @Transactional
 public class CommentServiceTest {
+
     @Autowired CommentService commentService;
     @Autowired CommentRepository commentRepository;
+    @Autowired PostService postService;
+    @Autowired UserService userService;
+    @Autowired MockFileGenerator mg;
 
     @Test
     public void 댓글_목록_조회() {
         // given
-        Long postId = 1L;
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
 
         // when
+        CommentRequest commentReq = new CommentRequest("content");
+        Long commentId = commentService.save(userId, postId, commentReq);
         List<CommentDTO> commentList = commentService.getCommentList(postId);
 
         // then
@@ -32,14 +59,30 @@ public class CommentServiceTest {
     @Test
     public void 댓글_추가() {
         // given
-        Long userId = 1L;
-        Long postId = 1L;
-        CommentRequest req = new CommentRequest(
-                "content"
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
         );
 
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
+
         // when
-        Long commentId = commentService.save(userId, postId, req);
+        CommentRequest commentReq = new CommentRequest("content");
+        Long commentId = commentService.save(userId, postId, commentReq);
 
         // then
         assert commentRepository.existsById(commentId);
@@ -49,24 +92,64 @@ public class CommentServiceTest {
     @Test
     public void 댓글_수정() {
         // given
-        Long userId = 1L;
-        Long commentId = 1L;
-        CommentRequest req = new CommentRequest(
-                "new content"
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
         );
 
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
+
+        CommentRequest commentReq = new CommentRequest("content");
+        Long commentId = commentService.save(userId, postId, commentReq);
+
         // when
-        Long result = commentService.update(userId, commentId, req);
+        CommentRequest newCommentReq = new CommentRequest("newContent");
+        Long resultId = commentService.update(userId, commentId, newCommentReq);
 
         // then
-        assert commentRepository.getReferenceById(result).getContent().equals(req.getContent());
+        assert commentRepository.getReferenceById(resultId).getContent().equals(newCommentReq.getContent());
     }
 
     @Test
     public void 댓글_삭제() {
         // given
-        Long userId = 1L;
-        Long commentId = 13L;
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
+
+        CommentRequest commentReq = new CommentRequest("content");
+        Long commentId = commentService.save(userId, postId, commentReq);
 
         // when
         commentService.delete(userId, commentId);
