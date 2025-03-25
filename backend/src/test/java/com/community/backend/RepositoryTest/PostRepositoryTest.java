@@ -20,8 +20,7 @@ class PostRepositoryTest {
     @Test
     public void save() {
         // given
-        User user = userRepository.findById(1L)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = makeUser();
 
         Post post = new Post();
         post.setTitle("Post Title");
@@ -39,11 +38,32 @@ class PostRepositoryTest {
     @Test
     public void findAll() {
         // given
+        int prevCount = postRepository.findAll().size();
+        User user = makeUser();
+        Post post1 = new Post();
+        post1.setTitle("Post Title");
+        post1.setContent("Post Content");
+        post1.setImageUrl("imageUrl");
+        post1.setUser(user);
+        postRepository.save(post1);
 
         // when
         List<Post> posts = postRepository.findAll();
 
         // then
-        assert posts.size() == 1;
+        System.out.println(posts.size());
+        assert posts.size() == prevCount + 1;
+    }
+
+    private User makeUser() {
+        User user = new User();
+        user.setEmail("test1@test.com");
+        user.setPassword("password");
+        user.setNickname("test1");
+        user.setProfileImgUrl("url");
+
+        userRepository.save(user);
+
+        return user;
     }
 }

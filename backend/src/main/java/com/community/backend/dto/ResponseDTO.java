@@ -5,8 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProfileResponse {
-    private String email;
-    private String nickname;
-    private String profileImg;
+public class ResponseDTO {
+    Boolean success;
+    String message;
 }

@@ -3,8 +3,6 @@ package com.community.backend.domain;
 import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 
 import java.io.Serializable;
 

@@ -4,12 +4,12 @@ import com.community.backend.dto.*;
 
 public interface UserService {
     // 인증
-    Long login(UserLoginRequest req);
+    UserDTO login(UserLoginRequest req);
 
     // 회원
-    String join(UserJoinRequest req);
+    Long join(UserJoinRequest req);
     void delete(Long userId);
     ProfileResponse getProfile(Long userId);
-    String updateProfile(Long userId, ProfileRequest req);
-    String updatePassword(Long userId, PasswordRequest req);
+    UserDTO updateProfile(Long userId, ProfileRequest req);
+    Long updatePassword(Long userId, PasswordRequest req);
 }

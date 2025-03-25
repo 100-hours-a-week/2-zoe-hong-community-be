@@ -3,6 +3,7 @@ package com.community.backend.RepositoryTest;
 import com.community.backend.domain.Comment;
 import com.community.backend.domain.Post;
 import com.community.backend.domain.User;
+import com.community.backend.domain.enums.UserState;
 import com.community.backend.repository.CommentRepository;
 import com.community.backend.repository.PostRepository;
 import com.community.backend.repository.UserRepository;
@@ -10,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @SpringBootTest
 @Transactional
@@ -23,10 +22,9 @@ public class CommentRepositoryTest {
     @Test
     public void save() {
         // given
-        User user = userRepository.findById(1L)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Post post = postRepository.findById(1L)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        User user = makeUser();
+        Post post = makePost(user);
+
         Comment comment = new Comment();
         comment.setUser(user);
         comment.setPost(post);
@@ -41,20 +39,65 @@ public class CommentRepositoryTest {
 
     @Test
     public void findByPostId() {
+        // given
+        User user = makeUser();
+        Post post = makePost(user);
+
+        int prevCount = commentRepository.findByPostId(post.getId()).size();
+
+        Comment comment = new Comment();
+        comment.setUser(user);
+        comment.setPost(post);
+        comment.setContent("Comment Content");
+        commentRepository.save(comment);
+
         // when
-        List<Comment> comments = commentRepository.findByPostId(1L);
+        int presCount = commentRepository.findByPostId(post.getId()).size();
 
         // then
-        assert comments.size() == 1;
+        assert presCount == prevCount + 1;
     }
 
     @Test
-    public void findAll() {
+    public void countValidCommentsByPostId() {
+        // given
+        User user = makeUser();
+        Post post = makePost(user);
+
+        Comment comment = new Comment();
+        comment.setUser(user);
+        comment.setPost(post);
+        comment.setContent("Comment Content");
+        commentRepository.save(comment);
+
         // when
-        List<Comment> comments = commentRepository.findAll();
+        user.setState(UserState.DELETED);
+        Long count = commentRepository.countValidCommentsByPostId(post.getId());
 
         // then
-        assert comments.size() == 1;
+        assert count == 0;
+
     }
 
+    private User makeUser() {
+        User user = new User();
+        user.setEmail("test1@test.com");
+        user.setPassword("password");
+        user.setNickname("test1");
+        user.setProfileImgUrl("url");
+        userRepository.save(user);
+
+        return user;
+    }
+
+    private Post makePost(User user) {
+        Post post = new Post();
+        post.setTitle("Post Title");
+        post.setContent("Post Content");
+        post.setImageUrl("imageUrl");
+        post.setUser(user);
+        postRepository.save(post);
+
+        return post;
+    }
 }

@@ -1,17 +1,15 @@
 package com.community.backend.ServiceTest;
 
-import com.community.backend.dto.PostCardDTO;
-import com.community.backend.dto.PostDTO;
-import com.community.backend.dto.PostRequest;
+import com.community.backend.dto.*;
 import com.community.backend.repository.LikedRepository;
 import com.community.backend.repository.PostRepository;
 import com.community.backend.service.PostService;
+import com.community.backend.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @SpringBootTest
 @Transactional
@@ -19,70 +17,135 @@ public class PostServiceTest {
 
     @Autowired private PostService postService;
     @Autowired private PostRepository postRepository;
-    @Autowired
-    private LikedRepository likedRepository;
+    @Autowired private LikedRepository likedRepository;
+    @Autowired private UserService userService;
+    @Autowired private MockFileGenerator mg;
 
     @Test
     public void 게시글_목록_조회() {
+        //given
+        int prevCount = postService.getPostList().size();
+
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+        UserDTO user = userService.login(loginReq);
+
         // when
-        List<PostCardDTO> postList = postService.getPostList();
-
-        // then
-        assert postList.size() == 1;
-    }
-
-    @Test
-    public void 게시글_조회() {
-        // given
-        Long postId = 1L;
-
-        // when
-        PostDTO dto = postService.getPostById(postId);
-
-        // then
-        assert dto.getTitle().equals(postRepository.findById(postId).get().getTitle());
-    }
-
-    @Test
-    public void 게시글_추가() {
-        // given
-        Long userId = 1L;
-        PostRequest req = new PostRequest(
+        PostRequest postReq = new PostRequest(
                 "title",
                 "content",
-                "image url"
+                null
         );
-
-        // when
-        Long postId = postService.save(userId, req);
+        Long postId = postService.save(userId, postReq);
+        int presCount = postService.getPostList().size();
 
         // then
-        assert postRepository.findById(postId).get().getTitle().equals(req.getTitle());
+        assert presCount == prevCount + 1;
+    }
+
+    @Test
+    public void 게시글_생성_조회() {
+        // given
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+        UserDTO user = userService.login(loginReq);
+
+        // when
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
+
+        // then
+        PostDTO dto = postService.getPostById(postId);
+        assert postRepository.findById(postId).get().getTitle().equals(dto.getTitle());
     }
 
     @Test
     public void 게시글_수정() {
         // given
-        Long userId = 1L;
-        Long postId = 1L;
-        PostRequest req = new PostRequest(
-                "new title",
-                "content",
-                "image url"
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
         );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+        UserDTO user = userService.login(loginReq);
+
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
 
         // when
-        Long result = postService.update(userId, postId, req);
+        PostRequest postUpdateReq = new PostRequest(
+                "new title",
+                "new content",
+                null
+        );
+        Long resultId = postService.update(userId, postId, postUpdateReq);
 
         // then
-        assert postRepository.findById(result).get().getTitle().equals(req.getTitle());
+        assert postRepository.findById(resultId).get().getTitle().equals(postUpdateReq.getTitle());
     }
 
     @Test
     public void 게시글_삭제() {
-        // given
-        Long postId = 1L;
-        Long userId = 1L;
+        /// given
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+        UserDTO user = userService.login(loginReq);
+
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
 
         // when
         postService.delete(userId, postId);
@@ -94,13 +157,33 @@ public class PostServiceTest {
     @Test
     public void 게시글_좋아요() {
         // given
-        Long postId = 1L;
-        Long userId = 1L;
+        // given
+        MockMultipartFile mockFile = mg.MockFile();
+        UserJoinRequest joinReq = new UserJoinRequest(
+                "aaa@gmail.com",
+                "aA1!word",
+                "aaa",
+                mockFile
+        );
+        Long userId = userService.join(joinReq);
+
+        UserLoginRequest loginReq = new UserLoginRequest(
+                "aaa@gmail.com",
+                "aA1!word"
+        );
+        UserDTO user = userService.login(loginReq);
+
+        PostRequest postReq = new PostRequest(
+                "title",
+                "content",
+                null
+        );
+        Long postId = postService.save(userId, postReq);
 
         // when
-        Long result = postService.toggleLike(postId, userId);
+        Long result = postService.toggleLike(userId, postId);
 
         // then
-        assert result == likedRepository.findByPostId(postId).size();
+        assert postService.isLiked(userId, postId);
     }
 }
