@@ -1,10 +1,7 @@
 package com.community.backend.controller;
 
 import com.community.backend.common.exception.CustomException;
-import com.community.backend.dto.PostCardDTO;
-import com.community.backend.dto.PostDTO;
-import com.community.backend.dto.PostRequest;
-import com.community.backend.dto.UserSessionDTO;
+import com.community.backend.dto.*;
 import com.community.backend.service.PostService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +65,7 @@ public class PostController {
         }
 
         try {
+            postService.increaseViewCount(postId);
             PostDTO post = postService.getPostById(postId);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
@@ -78,7 +76,25 @@ public class PostController {
         }
     }
 
-    @PutMapping("/{postId}")
+    @GetMapping("/{postId}/edit")
+    public ResponseEntity<?> findEditPostById(HttpSession session, @PathVariable Long postId) {
+        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
+        if (user == null) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
+        }
+
+        try {
+            PostDTO post = postService.getPostById(postId);
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of(
+                    "success", true,
+                    "post", post
+            ));
+        } catch (RuntimeException e) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PutMapping("/{postId}/edit")
     public ResponseEntity<?> updatePost(HttpSession session, @PathVariable Long postId, @ModelAttribute PostRequest req) {
         UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
         if (user == null) {

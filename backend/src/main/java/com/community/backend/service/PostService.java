@@ -12,6 +12,7 @@ public interface PostService {
     Long save(Long userId, PostRequest req);
     Long update(Long userId, Long postId, PostRequest req);
     void delete(Long userId, Long postId);
+    void increaseViewCount(Long postId);
 
     // 좋아요
     Long toggleLike(Long userId, Long postId);

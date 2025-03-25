@@ -4,6 +4,7 @@ import com.community.backend.domain.Liked;
 import com.community.backend.domain.LikedId;
 import com.community.backend.domain.Post;
 import com.community.backend.domain.User;
+import com.community.backend.domain.enums.UserState;
 import com.community.backend.dto.PostCardDTO;
 import com.community.backend.dto.PostDTO;
 import com.community.backend.dto.PostRequest;
@@ -36,12 +37,15 @@ public class PostServiceImpl implements PostService {
     public List<PostCardDTO> getPostList() {
         List<PostCardDTO> res = new ArrayList<>();
 
-        postRepository.findAll().forEach(post -> {
+        for (Post post : postRepository.findAll()) {
+            if (post.getUser().getState() == UserState.DELETED) {
+                continue;
+            }
             User user = post.getUser();
             UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
-            Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
-            Long commentCount = (long) commentRepository.findByPostId(post.getId()).size();
+            Long likeCount = likedRepository.countValidLikesByPostId(post.getId());
+            Long commentCount = commentRepository.countValidCommentsByPostId(post.getId());
 
             PostCardDTO dto = new PostCardDTO(
                     post.getId(),
@@ -53,7 +57,7 @@ public class PostServiceImpl implements PostService {
                     commentCount
             );
             res.add(dto);
-        });
+        }
         return res;
     }
 
@@ -64,8 +68,8 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(post.getUser().getId()).orElseThrow(EntityNotFoundException::new);
         UserDTO userDTO = new UserDTO(user.getId(), user.getNickname(), user.getProfileImgUrl());
 
-        Long likeCount = (long) likedRepository.findByPostId(post.getId()).size();
-        Long commentCount = (long) commentRepository.findByPostId(post.getId()).size();
+        Long likeCount = likedRepository.countValidLikesByPostId(post.getId());
+        Long commentCount = commentRepository.countValidCommentsByPostId(post.getId());
 
         return new PostDTO(
                 post.getTitle(),
@@ -84,7 +88,9 @@ public class PostServiceImpl implements PostService {
         Post post = new Post();
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setImageUrl(imageHandler.saveImage(req.getImage(), false));
+        if (req.getImage() != null) {
+            post.setImageUrl(imageHandler.saveImage(req.getImage()));
+        }
         post.setUser(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
         postRepository.save(post);
 
@@ -102,7 +108,9 @@ public class PostServiceImpl implements PostService {
 
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setImageUrl(imageHandler.saveImage(req.getImage(), false));
+        if (req.getImage() != null) {
+            post.setImageUrl(imageHandler.saveImage(req.getImage()));
+        }
 
         postRepository.save(post);
         return post.getId();
@@ -121,18 +129,23 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public void increaseViewCount(Long postId) {
+        postRepository.increaseViewCount(postId);
+    }
+
+    @Override
     public Long toggleLike(Long userId, Long postId) {
         if (isLiked(userId, postId)) {
             unlike(userId, postId);
         } else {
             like(userId, postId);
         }
-        return getLikeCount(postId);
+        return likedRepository.countValidLikesByPostId(postId);
     }
 
     @Override
     public Boolean isLiked(Long userId, Long postId) {
-        return likedRepository.findByPostId(postId).stream().anyMatch(like -> like.getUser().getId().equals(userId));
+        return likedRepository.findByUserIdAndPostId(userId, postId).isPresent();
     }
 
     private void unlike(Long userId, Long postId) {
@@ -149,9 +162,5 @@ public class PostServiceImpl implements PostService {
         liked.setPost(postRepository.findById(postId).orElseThrow(EntityNotFoundException::new));
 
         likedRepository.save(liked);
-    }
-
-    private Long getLikeCount(Long postId) {
-        return (long) likedRepository.findByPostId(postId).size();
     }
 }
