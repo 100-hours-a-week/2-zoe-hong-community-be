@@ -1,6 +1,7 @@
 package com.community.backend.controller;
 
 import com.community.backend.common.exception.CustomException;
+import com.community.backend.dto.UserDTO;
 import com.community.backend.dto.UserLoginRequest;
 import com.community.backend.dto.UserSessionDTO;
 import com.community.backend.service.UserService;
@@ -31,16 +32,16 @@ public class AuthController {
         }
 
         try {
-            Long userId = userService.login(req);
+            UserDTO res = userService.login(req);
 
             //세션
-            UserSessionDTO userSessionDTO = new UserSessionDTO(userId);
+            UserSessionDTO userSessionDTO = new UserSessionDTO(res.getId());
             HttpSession newSession = sessionReq.getSession();
             newSession.setAttribute("user", userSessionDTO);
 
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
-                    "id", userId
+                    "user", res
             ));
         } catch (IllegalArgumentException e) {
             throw new CustomException(HttpStatus.BAD_REQUEST, e.getMessage());
