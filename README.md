@@ -1,9 +1,13 @@
 # 2-ktb-community-be
 KTB 6-7주차 과제: 기능 정의서를 기반으로 사용자 요구사항에 맞춘 커뮤니티 관리 시스템 구현
 
+
+
 ## 1. 프로젝트 소개
 Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.
 주요 기능: 회원가입, 로그인, 게시글, 댓글
+
+
 
 ## 2. 기술 스택
 - Java 21
@@ -14,8 +18,12 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.
 - Gradle
 <!-- - Swagger (SpringDoc OpenAPI) -->
 
+
+
 ## 3. DB 구조
 ![Image](https://github.com/user-attachments/assets/210f1de4-fee3-4d0f-8565-b7df5898d4fc)
+
+
 
 ## 4. 프로젝트 구조
 
@@ -102,6 +110,8 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.
         └── images/
 ```
 
+
+
 ## 5. 실행 방법
 
 ```bash
@@ -127,6 +137,8 @@ spring.jpa.show-sql=true
 ./gradlew bootRun
 ```
 
+
+
 ## 6. 주요 API 엔드포인트
 | 메서드   | URL                                               | 설명              |
 |----------|---------------------------------------------------|-------------------|
@@ -148,6 +160,8 @@ spring.jpa.show-sql=true
 | `PATCH`  | `/users/self/password`                            | 비밀번호 변경       |
 | `DELETE` | `/users/self`                                     | 회원 탈퇴 요청      |
 | `POST`   | `/auth/logout`                                    | 로그아웃 요청       |
+
+
 
 
 ## 7. 주요 기능
