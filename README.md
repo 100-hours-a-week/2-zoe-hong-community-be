@@ -2,10 +2,9 @@
 KTB 6-7주차 과제: 기능 정의서를 기반으로 사용자 요구사항에 맞춘 커뮤니티 관리 시스템 구현
 
 <br/>
-<br/>
 
 ## 1. 프로젝트 소개
-Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.
+Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.<br/>
 주요 기능: 회원가입, 로그인, 게시글, 댓글
 
 <br/>
@@ -15,18 +14,35 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.
 - Spring Boot 3.4.3
 - Spring Security
 - Spring Data JPA
+- Spring Validation
 - MySQL
 - Gradle
-<!-- - Swagger (SpringDoc OpenAPI) -->
+- Lombok
+- ~~Swagger (SpringDoc OpenAPI 2.2.0)~~
 
 <br/>
 
-## 3. DB 구조
+## 3. 주요 기능
+- **사용자 인증**
+  - 회원가입 및 로그인
+  - 세션 기반 인증 처리
+- **회원정보 기능**
+  - 프로필 사진 및 닉네임 변경
+  - 비밀번호 변경
+- **게시글 기능**
+  - 게시글 작성, 조회, 수정, 삭제
+  - 게시글 좋아요 / 좋아요 취소
+- **댓글 기능**
+  - 댓글 작성, 조회, 수정, 삭제
+
+<br/>
+
+## 4. DB 구조
 ![Image](https://github.com/user-attachments/assets/210f1de4-fee3-4d0f-8565-b7df5898d4fc)
 
 <br/>
 
-## 4. 프로젝트 구조
+## 5. 프로젝트 구조
 
 ```
 2-ktb-community-be
@@ -113,23 +129,15 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.
 
 <br/>
 
-## 5. 실행 방법
+## 6. 실행 방법
 
 ```bash
 # 1. Git 클론
 git clone https://github.com/chulsu0012/2-ktb-community-be.git
 
-# 2. MySQL 실행 및 DB 생성
-create database community;
+# 2. MySQL 실행 및 DB 생성(community)
 
 # 3. 환경 변수 및 설정
-spring.application.name=backend
-
-spring.datasource.url=jdbc:mysql://localhost:3306/community?serverTimezone=UTC&useSSL=false
-spring.datasource.username=root
-spring.datasource.password=
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
 spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
@@ -140,39 +148,95 @@ spring.jpa.show-sql=true
 
 <br/>
 
-## 6. 주요 API 엔드포인트
+## 7. 주요 API 엔드포인트
 | 메서드   | URL                                               | 설명              |
 |----------|---------------------------------------------------|-------------------|
 | `POST`   | `/auth/login`                                     | 로그인 요청        |
+| `POST`   | `/auth/logout`                                    | 로그아웃          |
 | `POST`   | `/users`                                          | 회원가입 요청      |
-| `GET`    | `/posts`                                          | 전체 게시글 목록 조회 |
-| `POST`   | `/posts`                                          | 게시글 생성        |
-| `GET`    | `/posts/{postId}`                                 | 게시글 단건 조회     |
-| `PUT`    | `/posts/{postId}/edit`                            | 게시글 수정        |
-| `DELETE` | `/posts/{postId}`                                 | 게시글 삭제        |
-| `GET`    | `/posts/{postId}/comments`                        | 댓글 목록 조회      |
-| `POST`   | `/posts/{postId}/comments`                        | 댓글 생성 요청      |
-| `PUT`    | `/posts/{postId}/comments/{commentId}`            | 댓글 수정 요청      |
-| `DELETE` | `/posts/{postId}/comments/{commentId}`            | 댓글 삭제 요청      |
-| `GET`    | `/posts/{postId}/like`                            | 좋아요 여부 확인     |
-| `POST`   | `/posts/{postId}/like`                            | 좋아요 요청         |
 | `GET`    | `/users/self/info`                                | 내 정보 조회        |
 | `PATCH`  | `/users/self/info`                                | 내 정보 수정        |
 | `PATCH`  | `/users/self/password`                            | 비밀번호 변경       |
-| `DELETE` | `/users/self`                                     | 회원 탈퇴 요청      |
-| `POST`   | `/auth/logout`                                    | 로그아웃 요청       |
+| `DELETE` | `/users/self`                                     | 회원 탈퇴         |
+| `GET`    | `/posts`                                          | 전체 게시글 목록 조회 |
+| `POST`   | `/posts`                                          | 게시글 생성        |
+| `GET`    | `/posts/{postId}`                                 | 게시글 단건 조회     |
+| `GET`    | `/posts/{postId}/edit`                            | 수정 대상 게시글 불러오기 |
+| `PUT`    | `/posts/{postId}/edit`                            | 게시글 수정        |
+| `DELETE` | `/posts/{postId}`                                 | 게시글 삭제        |
+| `GET`    | `/posts/{postId}/comments`                        | 댓글 목록 조회      |
+| `POST`   | `/posts/{postId}/comments`                        | 댓글 생성          |
+| `PUT`    | `/posts/{postId}/comments/{commentId}`            | 댓글 수정          |
+| `DELETE` | `/posts/{postId}/comments/{commentId}`            | 댓글 삭제          |
+| `GET`    | `/posts/{postId}/like`                            | 좋아요 여부 확인     |
+| `POST`   | `/posts/{postId}/like`                            | 좋아요 / 좋아요 취소  |
 
 <br/>
 
-## 7. 주요 기능
-- 사용자 인증
-  - 회원가입 및 로그인
-  - 세션 기반 인증 처리
-- 회원정보 기능
-  - 프로필 사진 및 닉네임 변경
-  - 비밀번호 변경
-- 게시글 기능
-  - 게시글 작성, 조회, 수정, 삭제
-  - 게시글 좋아요 / 좋아요 취소
-- 댓글 기능
-  - 댓글 작성, 조회, 수정, 삭제
+## 7. API 연동
+- 기본적으로 더미데이터(`data.js`)를 기반으로 동작합니다.
+- 백엔드(Spring Boot 서버)가 로컬에서 실행 중일 경우, 실제 API와 연동하여 동작합니다.
+  - API 엔드포인트는 `config.js`에서 설정할 수 있습니다.
+
+<br/>
+
+## 8. 이슈 및 해결 방법
+### 1. 세션 인증
+- **문제**: FE에서 요청을 보내도 BE에서 세션 정보를 읽지 못함
+- **원인**
+  - 도메인을 `localhost` 또는 `127.0.0.1`으로 통일하지 않으면 쿠키 공유 불가
+  - FE와 BE의 포트가 다르기 때문에 오리진이 달라짐 → 쿠키 미포함
+- **해결**
+  - FE: fetch 요청에 `credentials: 'include'` 추가
+  - BE: `CorsRegistry` 설정에서 `allowedOrigins`에 FE 주소 명시 + `allowCredentials(true)`
+
+---
+
+### 2. 파일 업로드 (이미지 등 바이너리 데이터 처리)
+- **문제**: 이미지와 같은 바이너리 데이터를 전송할 때 BE에서 값을 받지 못함
+- **원인**: 일반 JSON 요청으로는 바이너리 데이터 전송 불가
+- **해결**
+  - FE: `FormData` 객체로 전송
+  - BE: `@ModelAttribute`, `MultipartFile` 활용
+  - 파일 저장 시 `UUID` 기반 파일명으로 지정하여 충돌 방지
+  - FE에는 이미지 경로만 응답하고, 프론트에서 백엔드 주소 붙여서 렌더링
+
+---
+
+### 3. 이미지 필드 처리 (수정 시 null 가능성)
+- **문제**: 게시글/회원정보 수정 시 이미지가 없을 경우 null로 전송되어 오류 발생
+- **원인**: 기존 이미지를 유지해야 하는데, `MultipartFile`이 null이면 BE에서 처리 누락 가능성 존재
+- **해결**
+  - FE: 새 이미지가 있는 경우에만 `FormData`에 포함
+  - BE: `MultipartFile`이 null일 경우 기존 이미지 유지하도록 조건문 처리
+
+---
+
+### 4. API 응답 형식 통일
+- **문제**: FE에서 API 응답 구조가 매번 달라 예외 처리가 어려움
+- **원인**: 컨트롤러별 응답 포맷이 일관되지 않음
+- **해결**
+  - 공통 응답 포맷 설계
+    - 성공: `{ success: true, data: ... }`
+    - 실패: `{ success: false, message: "오류 메시지" }`
+  - 커스텀 예외 클래스 + 전역 예외 처리기 구성하여 일관된 오류 응답 제공
+
+---
+
+### 5. 게시글 조회 vs 수정 API 분리
+- **문제**: 게시글 수정할 때도 조회수(view count)가 올라감
+- **원인**: 조회와 수정을 동일한 API로 처리 → 조회수 증가 로직도 같이 실행됨
+- **해결**
+  - 게시글 조회용 API와 수정용 API를 분리
+  - 조회용 API에만 조회수 증가 쿼리(`@Modifying` + JPQL) 적용
+
+---
+
+### 6. Swagger(SpringDoc) 호환 오류
+- **문제**: Swagger UI 접속 시 500 에러 발생
+- **원인**
+  - 현재 Spring Boot 3.4.x와 안정적으로 호환되는 SwaggerDoc 버전은 존재하지 않음
+  - → `NoSuchMethodError` 발생
+- **해결**
+  - Spring Boot 버전을 3.1.x로 다운그레이드 또는 Swagger 제거
+  - 본 프로젝트에서는 Swagger 미사용 선택 (`@NoArgsConstructor` 없는 DTO 유지)
