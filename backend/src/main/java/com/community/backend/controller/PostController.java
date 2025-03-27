@@ -1,12 +1,16 @@
 package com.community.backend.controller;
 
 import com.community.backend.common.exception.CustomException;
-import com.community.backend.dto.*;
+import com.community.backend.dto.PostCardDTO;
+import com.community.backend.dto.PostDTO;
+import com.community.backend.dto.PostRequest;
 import com.community.backend.service.PostService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +24,9 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
-    public ResponseEntity<?> findAllPosts(HttpSession session) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> findAllPosts() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
@@ -38,14 +42,15 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createPost(HttpSession session, @ModelAttribute PostRequest req) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> createPost(@ModelAttribute PostRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
-            Long postId = postService.save(user.getUserId(), req);
+            Long userId = (Long) authentication.getPrincipal();
+            Long postId = postService.save(userId, req);
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "success", true,
                     "id", postId
@@ -58,32 +63,16 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<?> findPostById(HttpSession session, @PathVariable Long postId) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> findPostById(@PathVariable Long postId, @RequestParam(required = false) Boolean isEdit) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
-            postService.increaseViewCount(postId);
-            PostDTO post = postService.getPostById(postId);
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                    "success", true,
-                    "post", post
-            ));
-        } catch (RuntimeException e) {
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
-    @GetMapping("/{postId}/edit")
-    public ResponseEntity<?> findEditPostById(HttpSession session, @PathVariable Long postId) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
-            throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
-        }
-
-        try {
+            if (!isEdit) {
+                postService.increaseViewCount(postId);
+            }
             PostDTO post = postService.getPostById(postId);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
@@ -95,19 +84,20 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/edit")
-    public ResponseEntity<?> updatePost(HttpSession session, @PathVariable Long postId, @ModelAttribute PostRequest req) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> updatePost(@PathVariable Long postId, @ModelAttribute PostRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         PostDTO post = postService.getPostById(postId);
-        if (!post.getUser().getId().equals(user.getUserId())) {
+        Long userId = (Long) authentication.getPrincipal();
+        if (!post.getUser().getId().equals(userId)) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "게시글을 수정할 권한이 없습니다.");
         }
 
          try {
-             Long resultPostId = postService.update(user.getUserId(), postId, req);
+             Long resultPostId = postService.update(userId, postId, req);
              return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                      "success", true,
                      "id", resultPostId
@@ -120,19 +110,21 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<?> deletePost(HttpSession session, @PathVariable Long postId) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> deletePost(@PathVariable Long postId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         PostDTO post = postService.getPostById(postId);
-        if (!post.getUser().getId().equals(user.getUserId())) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        if (!post.getUser().getId().equals(userId)) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "게시글을 삭제할 권한이 없습니다.");
         }
 
         try {
-            postService.delete(user.getUserId(), postId);
+            postService.delete(userId, postId);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
                     "id", postId
@@ -146,14 +138,16 @@ public class PostController {
      * 좋아요
      */
     @GetMapping("/{postId}/like")
-    public ResponseEntity<?> isLiked(HttpSession session, @PathVariable Long postId) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> isLiked(@PathVariable Long postId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
+
         try {
-            Boolean liked = postService.isLiked(user.getUserId(), postId);
+            Long userId = (Long) authentication.getPrincipal();
+            Boolean liked = postService.isLiked(userId, postId);
             return ResponseEntity.ok().body(Map.of(
                     "success", true,
                     "liked", liked
@@ -164,15 +158,16 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<?> likePost(HttpSession session, @PathVariable Long postId) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> likePost(@PathVariable Long postId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
-            boolean isAlreadyLiked = postService.isLiked(user.getUserId(), postId);
-            Long likes = postService.toggleLike(user.getUserId(), postId);
+            Long userId = (Long) authentication.getPrincipal();
+            boolean isAlreadyLiked = postService.isLiked(userId, postId);
+            Long likes = postService.toggleLike(userId, postId);
             String message = isAlreadyLiked ? "좋아요 취소되었습니다." : "좋아요 등록되었습니다.";
             return ResponseEntity.ok().body(Map.of(
                     "success", true,

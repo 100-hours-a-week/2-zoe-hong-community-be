@@ -3,13 +3,14 @@ package com.community.backend.controller;
 import com.community.backend.common.exception.CustomException;
 import com.community.backend.dto.UserDTO;
 import com.community.backend.dto.UserLoginRequest;
-import com.community.backend.dto.UserSessionDTO;
+import com.community.backend.security.JwtUtil;
 import com.community.backend.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,25 +24,25 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("login")
-    public ResponseEntity<?> login(HttpSession session, HttpServletRequest sessionReq, @RequestBody UserLoginRequest req) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user != null) {
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             throw new CustomException(HttpStatus.FORBIDDEN, "이미 로그인된 사용자입니다.");
         }
 
         try {
             UserDTO res = userService.login(req);
 
-            //세션
-            UserSessionDTO userSessionDTO = new UserSessionDTO(res.getId());
-            HttpSession newSession = sessionReq.getSession();
-            newSession.setAttribute("user", userSessionDTO);
+            // JWT
+            String token = jwtUtil.createToken(res);
 
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
-                    "user", res
+                    "token", token,
+                    "profileImgUrl", res.getProfileImgUrl()
             ));
         } catch (IllegalArgumentException e) {
             throw new CustomException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -51,16 +52,16 @@ public class AuthController {
     }
 
     @PostMapping("logout")
-    public ResponseEntity<?> logout(HttpSession session) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
-            throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
+    public ResponseEntity<?> logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
+            throw new CustomException(HttpStatus.OK, "로그인된 사용자가 아닙니다.");
         }
 
-        session.invalidate();
+        Long userId = (Long) authentication.getPrincipal();
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                 "success", true,
-                "id", user.getUserId()
+                "id", userId
         ));
     }
 }
