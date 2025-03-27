@@ -18,7 +18,7 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.<br/>
 - MySQL
 - Gradle
 - Lombok
-- ~~Swagger (SpringDoc OpenAPI 2.2.0)~~
+- Swagger (SpringDoc OpenAPI 2.8.6)
 
 <br/>
 
@@ -148,22 +148,44 @@ spring.jpa.show-sql=true
 
 <br/>
 
-## 7. 주요 API 엔드포인트
+## 6. API 문서
+Swagger UI를 통해 전체 API 명세서를 확인할 수 있습니다.
+- [Swagger Document](http://localhost:8080/swagger-ui/index.html)
+
+### 인증
 | 메서드   | URL                                               | 설명              |
 |----------|---------------------------------------------------|-------------------|
 | `POST`   | `/auth/login`                                     | 로그인 요청        |
 | `POST`   | `/auth/logout`                                    | 로그아웃          |
+
+---
+
+### 회원정보
+| 메서드   | URL                                               | 설명              |
+|----------|---------------------------------------------------|-------------------|
 | `POST`   | `/users`                                          | 회원가입 요청      |
 | `GET`    | `/users/self/info`                                | 내 정보 조회        |
 | `PATCH`  | `/users/self/info`                                | 내 정보 수정        |
 | `PATCH`  | `/users/self/password`                            | 비밀번호 변경       |
 | `DELETE` | `/users/self`                                     | 회원 탈퇴         |
+
+---
+
+### 게시글
+| 메서드   | URL                                               | 설명              |
+|----------|---------------------------------------------------|-------------------|
 | `GET`    | `/posts`                                          | 전체 게시글 목록 조회 |
 | `POST`   | `/posts`                                          | 게시글 생성        |
 | `GET`    | `/posts/{postId}`                                 | 게시글 단건 조회     |
 | `GET`    | `/posts/{postId}/edit`                            | 수정 대상 게시글 불러오기 |
 | `PUT`    | `/posts/{postId}/edit`                            | 게시글 수정        |
 | `DELETE` | `/posts/{postId}`                                 | 게시글 삭제        |
+
+---
+
+### 댓글
+| 메서드   | URL                                               | 설명              |
+|----------|---------------------------------------------------|-------------------|
 | `GET`    | `/posts/{postId}/comments`                        | 댓글 목록 조회      |
 | `POST`   | `/posts/{postId}/comments`                        | 댓글 생성          |
 | `PUT`    | `/posts/{postId}/comments/{commentId}`            | 댓글 수정          |
@@ -233,10 +255,45 @@ spring.jpa.show-sql=true
 ---
 
 ### 6. Swagger(SpringDoc) 호환 오류
-- **문제**: Swagger UI 접속 시 500 에러 발생
+
+- **문제**  
+  Swagger UI 접속 시 500 에러 발생 (`NoSuchMethodError`)
+
 - **원인**
-  - 현재 Spring Boot 3.4.x와 안정적으로 호환되는 SwaggerDoc 버전은 존재하지 않음
-  - → `NoSuchMethodError` 발생
-- **해결**
-  - Spring Boot 버전을 3.1.x로 다운그레이드 또는 Swagger 제거
-  - 본 프로젝트에서는 Swagger 미사용 선택 (`@NoArgsConstructor` 없는 DTO 유지)
+  - `springdoc-openapi-starter-webmvc-ui:2.2.0`은 Spring Framework 6.0.x와 호환되는 의존성을 사용함
+  - Spring Boot 3.4.3은 Spring Framework 6.2.x를 사용하기 때문에 호환 오류 발생
+
+- **해결 방법**
+  **① Spring Boot 버전 다운그레이드**
+  - Spring Boot 버전을 3.1.x로 낮추면 Swagger 2.2.0 사용 가능
+  ```groovy
+  plugins {
+      id 'java'
+      id 'org.springframework.boot' version '3.1.9'
+      id 'io.spring.dependency-management' version '1.1.3'
+  }
+
+  dependencies {
+      implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+  }
+  ```
+  
+  **② Swagger 최신 버전 사용**
+  - Maven Central에서 SwaggerDoc 최신 버전(예: 2.8.6)을 확인하고 사용
+  - Spring Boot 3.4.x에서도 정상 동작함
+  ```groovy
+  plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+  }
+  
+  dependencies {
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
+  }
+  ```
+  
+- **결론**
+  - Swagger 호환 오류는 Spring Boot 3.4.x와 Swagger 버전 불일치에서 비롯된 문제였음
+  - Swagger 최신 버전(2.8.6) 사용으로 문제 해결됨
+  - 프로젝트 초기 의존성 호환성 확인의 중요성을 경험함
