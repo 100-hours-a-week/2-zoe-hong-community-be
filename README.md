@@ -18,6 +18,7 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.<br/>
 - MySQL
 - Gradle
 - Lombok
+- JWT 0.12.6
 - Swagger (SpringDoc OpenAPI 2.8.6)
 
 <br/>

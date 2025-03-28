@@ -30,6 +30,7 @@ public class JwtUtil {
         byte[] decodedKey = Base64.getDecoder().decode(jwt.getSecret());
         this.key = Keys.hmacShaKeyFor(decodedKey);
     }
+    
     public String createToken(UserDTO user) {
         Instant now = Instant.now();
         return Jwts.builder()
@@ -38,6 +39,17 @@ public class JwtUtil {
                 .claim("id", user.getId())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(jwt.getExpiration())))
+                .compact();
+    }
+
+    public String createRefreshToken(UserDTO user) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .signWith(key, Jwts.SIG.HS256)
+                .subject(user.getNickname())
+                .claim("id", user.getId())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(jwt.getRefreshExpiration())))
                 .compact();
     }
 
