@@ -20,6 +20,7 @@ Spring Boot 기반의 커뮤니티 웹 서비스 백엔드입니다.<br/>
 - Lombok
 - JWT 0.12.6
 - Swagger (SpringDoc OpenAPI 2.8.6)
+- Redis
 
 <br/>
 
@@ -212,7 +213,8 @@ Swagger UI를 통해 전체 API 명세서를 확인할 수 있습니다.
 - **해결**
   - FE: fetch 요청에 `credentials: 'include'` 추가
   - BE: `CorsRegistry` 설정에서 `allowedOrigins`에 FE 주소 명시 + `allowCredentials(true)`
-
+- **기타**
+  - 현재 프로젝트에서는 JWT 방식을 도입하면서 더 이상 사용하지 않는 방식
 ---
 
 ### 2. 파일 업로드 (이미지 등 바이너리 데이터 처리)
@@ -298,3 +300,33 @@ Swagger UI를 통해 전체 API 명세서를 확인할 수 있습니다.
   - Swagger 호환 오류는 Spring Boot 3.4.x와 Swagger 버전 불일치에서 비롯된 문제였음
   - Swagger 최신 버전(2.8.6) 사용으로 문제 해결됨
   - 프로젝트 초기 의존성 호환성 확인의 중요성을 경험함
+
+<br/>
+<br/>
+
+## 고도화
+### 1. Redis + JWT 도입
+
+- **JWT 기반 인증/인가 도입** -> 기존 세션 방식보다 RESTful한 구조를 적용
+- **Access Token + Refresh Token** 구조로 인증 유지 및 자동 갱신 처리
+- **Redis**를 활용하여 Refresh Token을 저장하고 관리
+  - 로그아웃 시 토큰 무효화
+  - 토큰 재발급 시 유효성 검증 가능
+- Redis에 저장된 Refresh Token은 `refresh_token:{userId}` 형식으로 저장, 만료시간(TTL)을 `Duration.ofDays(1)`로 함께 설정
+
+#### 흐름 요약
+1. 로그인 시 Access Token, Refresh Token을 생성한다.
+2. Access Token은 클라이언트 localStorage에 저장한다.
+3. Refresh Token은 Redis에 저장한다.
+4. Access Token 만료 시, Refresh Token으로 `/auth/refresh`를 요청한다.
+5. 서버는 Redis에 저장된 토큰과 비교하여 Access Token을 재발급한다.
+
+#### JWT Claim 구성
+- **subject**: 사용자의 닉네임(`user.nickname()`)
+- **id**: 사용자의 고유 ID(`user.id`)
+
+#### 도입 효과
+- stateless: 서버 확장성 향상
+- 보안성 개선: Refresh Token 검증 및 무효화 가능
+- 클라이언트 UX 향상: 토큰 자동 갱신으로 인증 지속
+
