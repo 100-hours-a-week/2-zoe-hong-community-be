@@ -1,12 +1,17 @@
 package com.community.backend.controller;
 
 import com.community.backend.common.exception.CustomException;
-import com.community.backend.dto.*;
+import com.community.backend.dto.PasswordRequest;
+import com.community.backend.dto.ProfileRequest;
+import com.community.backend.dto.UserDTO;
+import com.community.backend.dto.UserJoinRequest;
 import com.community.backend.service.UserService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -19,14 +24,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<?> join(HttpSession session, @ModelAttribute UserJoinRequest req) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user != null) {
+    public ResponseEntity<?> join(@ModelAttribute UserJoinRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             throw new CustomException(HttpStatus.FORBIDDEN, "이미 로그인된 사용자입니다.");
         }
 
         try {
-            Long id = userService.join(req);
+            userService.join(req);
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "success", true
             ));
@@ -38,36 +43,36 @@ public class UserController {
     }
 
     @DeleteMapping("self")
-    public ResponseEntity<?> withdraw(HttpSession session) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> withdraw() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
-            userService.delete(user.getUserId());
+            Long userId = (Long) authentication.getPrincipal();
+            userService.delete(userId);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
-                    "id", user.getUserId()
+                    "id", userId
             ));
         } catch (Exception e) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        } finally {
-            session.invalidate();
         }
     }
 
     @GetMapping("self/info")
-    public ResponseEntity<?> readProfile(HttpSession session) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> readProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
+            Long userId = (Long) authentication.getPrincipal();
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
-                    "user", userService.getProfile(user.getUserId())
+                    "user", userService.getProfile(userId)
             ));
         } catch (Exception e) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -75,17 +80,18 @@ public class UserController {
     }
 
     @PatchMapping("self/info")
-    public ResponseEntity<?> updateProfile(HttpSession session, @ModelAttribute ProfileRequest req) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> updateProfile(@ModelAttribute ProfileRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
-            UserDTO res = userService.updateProfile(user.getUserId(), req);
+            Long userId = (Long) authentication.getPrincipal();
+            UserDTO res = userService.updateProfile(userId, req);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true,
-                    "user", res
+                    "profileImgUrl", res.getProfileImgUrl()
             ));
         } catch (IllegalArgumentException e) {
             throw new CustomException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -95,14 +101,15 @@ public class UserController {
     }
 
     @PatchMapping("self/password")
-    public ResponseEntity<?> updatePassword(HttpSession session, @RequestBody PasswordRequest req) {
-        UserSessionDTO user = (UserSessionDTO) session.getAttribute("user");
-        if (user == null) {
+    public ResponseEntity<?> updatePassword(@RequestBody PasswordRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "로그인된 사용자가 아닙니다.");
         }
 
         try {
-            Long userId = userService.updatePassword(user.getUserId(), req);
+            Long userId = (Long) authentication.getPrincipal();
+            userService.updatePassword(userId, req);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                     "success", true
             ));
